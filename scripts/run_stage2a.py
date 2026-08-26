@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from fx_momentum.metrics import annualized_stats
-from fx_momentum.portfolio import apply_transaction_costs, portfolio_turnover
+from fx_momentum.portfolio import apply_round_trip_costs, portfolio_turnover
 
 # Stage 2A conditions are frozen in config/stage2a.yaml.
 
@@ -137,7 +137,7 @@ def main() -> None:
         turnover.to_csv(outdir / f"turnover_{name}.csv", header=True)
 
         for bps in cfg["transaction_cost_bps_round_trip"]:
-            net = apply_transaction_costs(gross, turnover, float(bps))
+            net = apply_round_trip_costs(gross, weights, float(bps))
             net.to_csv(outdir / f"returns_{name}_cost{bps}bp.csv", header=True)
             row = {
                 "signal": name,
