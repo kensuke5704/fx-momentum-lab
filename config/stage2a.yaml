@@ -1,0 +1,71 @@
+strategy_id: fx-csmom-broad-spot-v1
+research_status: preregistered
+research_question: Does broad cross-sectional USD spot momentum predict next-month spot returns?
+base_currency: USD
+primary_start: '1999-01-01'
+rebalance: monthly
+signal_price_timing: month_end
+holding_months: 1
+return_type: log_spot_usd
+universe_policy: fixed_candidate_list_dynamic_availability
+min_currencies_per_month: 12
+currencies:
+  - EUR
+  - JPY
+  - GBP
+  - AUD
+  - NZD
+  - CAD
+  - CHF
+  - NOK
+  - SEK
+  - DKK
+  - CZK
+  - HUF
+  - PLN
+  - ISK
+  - BRL
+  - MXN
+  - ZAR
+  - KRW
+  - SGD
+  - THB
+  - IDR
+  - INR
+  - ILS
+  - MYR
+  - PHP
+signals:
+  - name: m1
+    lookback_months: 1
+  - name: m3
+    lookback_months: 3
+  - name: m6
+    lookback_months: 6
+  - name: m9
+    lookback_months: 9
+  - name: m12
+    lookback_months: 12
+portfolio:
+  construction: sixths
+  long_fraction: 0.1666666667
+  short_fraction: 0.1666666667
+  gross_exposure: 1.0
+  net_exposure: 0.0
+transaction_cost_bps_round_trip: [0, 2, 5, 10]
+include_carry: false
+include_forward_premium: false
+include_stops: false
+include_vol_target: false
+include_macro_filter: false
+acceptance:
+  require_positive_mean_ic: true
+  require_positive_winner_loser_for_majority_of_lookbacks: true
+  require_directional_agreement_3_6_9_12: true
+  require_positive_net_at_5bp_for_at_least_three_lookbacks: true
+  require_decade_robustness: true
+notes:
+  - USD is the base currency and is not ranked.
+  - Candidate currencies are fixed ex ante; monthly membership varies only with data availability.
+  - This is a new experiment, not a modification of Stage 1.
+  - Stage 2B will test excess-return momentum only after a defensible forward/carry data source is established.
