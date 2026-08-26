@@ -21,14 +21,16 @@ SERIES = {
     "CHF": ("CH", "CHF"),
 }
 
+DIMENSION_COLUMNS = ["FREQ", "REF_AREA", "CURRENCY", "COLLECTION"]
+
+
+def _code(value: object) -> str:
+    text = str(value).strip()
+    return text.split(":", 1)[0].strip() if ":" in text else text
+
 
 def _norm_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Normalize BIS flat-CSV headers to their SDMX concept codes.
-
-    BIS currently emits headers such as ``FREQ:FREQUENCY`` and
-    ``OBS_VALUE:OBSERVATION VALUE``. Older exports may contain the bare code.
-    Retaining the text before the first colon supports both forms.
-    """
+    """Normalize BIS flat-CSV headers to their SDMX concept codes."""
     df = df.copy()
     normalized = []
     for col in df.columns:
@@ -44,7 +46,11 @@ def _norm_columns(df: pd.DataFrame) -> pd.DataFrame:
         "OBSERVATION_VALUE": "OBS_VALUE",
         "COLLECTION_INDICATOR": "COLLECTION",
     }
-    return df.rename(columns={k: v for k, v in aliases.items() if k in df.columns})
+    df = df.rename(columns={k: v for k, v in aliases.items() if k in df.columns})
+    for col in DIMENSION_COLUMNS:
+        if col in df.columns:
+            df[col] = df[col].map(_code)
+    return df
 
 
 def _read_flat_csv(payload: bytes) -> pd.DataFrame:
@@ -52,8 +58,6 @@ def _read_flat_csv(payload: bytes) -> pd.DataFrame:
         csv_names = [n for n in zf.namelist() if n.lower().endswith(".csv")]
         if not csv_names:
             raise RuntimeError("BIS ZIP contains no CSV file")
-        # Flat bulk archives normally contain one data CSV. If metadata CSVs are
-        # ever added, prefer the largest CSV because it is the observation table.
         name = max(csv_names, key=lambda n: zf.getinfo(n).file_size)
         with zf.open(name) as fh:
             return _norm_columns(pd.read_csv(fh, low_memory=False))
@@ -72,11 +76,7 @@ def fetch_bis_monthly_end(timeout: int = 120) -> pd.DataFrame:
             f"Available columns: {sorted(raw.columns)}"
         )
 
-    raw = raw[
-        (raw["FREQ"].astype(str) == "M")
-        & (raw["COLLECTION"].astype(str) == "E")
-    ].copy()
-
+    raw = raw[(raw["FREQ"] == "M") & (raw["COLLECTION"] == "E")].copy()
     raw["TIME_PERIOD"] = pd.to_datetime(raw["TIME_PERIOD"], errors="coerce")
     raw["OBS_VALUE"] = pd.to_numeric(raw["OBS_VALUE"], errors="coerce")
 
@@ -85,25 +85,22 @@ def fetch_bis_monthly_end(timeout: int = 120) -> pd.DataFrame:
         if currency == "USD":
             continue
         sub = raw[
-            (raw["REF_AREA"].astype(str) == area)
-            & (raw["CURRENCY"].astype(str) == bis_currency)
+            (raw["REF_AREA"] == area)
+            & (raw["CURRENCY"] == bis_currency)
         ][["TIME_PERIOD", "OBS_VALUE"]].dropna()
         if sub.empty:
-            raise RuntimeError(f"No BIS series found for M.{area}.{bis_currency}.E")
+            available = raw.loc[raw["CURRENCY"] == bis_currency, "REF_AREA"].dropna().unique().tolist()[:20]
+            raise RuntimeError(
+                f"No BIS series found for M.{area}.{bis_currency}.E; "
+                f"available REF_AREA for {bis_currency}: {available}"
+            )
         sub = sub.drop_duplicates("TIME_PERIOD", keep="last").set_index("TIME_PERIOD").sort_index()
-
-        # BIS XRU is units of local currency per 1 USD. The research pipeline
-        # requires USD per 1 unit of currency, so invert the quotation.
         s = (1.0 / sub["OBS_VALUE"]).rename(currency)
         pieces.append(s)
 
     out = pd.concat(pieces, axis=1).sort_index()
     out.insert(0, "USD", 1.0)
     out.index.name = "date"
-
-    # The primary G8 sample starts in 1999. Keep earlier observations in the
-    # file for diagnostics, but rows are allowed to contain missing EUR before
-    # its reliable G8 history begins.
     return out
 
 
