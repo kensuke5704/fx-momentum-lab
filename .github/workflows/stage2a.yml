@@ -1,0 +1,37 @@
+name: stage2a-research
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/stage2a.yaml'
+      - 'scripts/fetch_bis_stage2a.py'
+      - 'scripts/run_stage2a.py'
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/stage2a.yml'
+  workflow_dispatch:
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install
+        run: pip install -e '.[dev]'
+      - name: Test
+        run: pytest -q
+      - name: Fetch BIS broad FX data
+        run: python scripts/fetch_bis_stage2a.py
+      - name: Run preregistered Stage 2A
+        run: python scripts/run_stage2a.py
+      - name: Upload Stage 2A results
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage2a-results
+          path: results/stage2a/
+          retention-days: 30
