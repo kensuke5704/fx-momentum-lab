@@ -16,6 +16,8 @@ from fx_momentum.metrics import annualized_stats
 from fx_momentum.portfolio import apply_round_trip_costs, portfolio_turnover
 from run_stage2a import sixth_weights, portfolio_returns, monthly_ic, ic_summary, six_bucket_forward_returns
 
+# Diagnostic-only proxy experiment; not true forward-based excess returns.
+
 
 def load(path: str, columns: list[str]) -> pd.DataFrame:
     df = pd.read_csv(path, parse_dates=['date']).set_index('date').sort_index()
