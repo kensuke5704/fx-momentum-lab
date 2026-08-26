@@ -1,0 +1,33 @@
+strategy_id: fx-csmom-broad-excess-proxy-v1
+research_status: diagnostic_only_preregistered
+research_question: Does adding a policy-rate carry proxy make broad FX momentum more robust?
+base_currency: USD
+primary_start: '1999-01-01'
+min_currencies_per_month: 12
+holding_months: 1
+currencies: [EUR, JPY, GBP, AUD, NZD, CAD, CHF, NOK, SEK, DKK, CZK, HUF, PLN, ISK, BRL, MXN, ZAR, KRW, SGD, THB, IDR, INR, ILS, MYR, PHP]
+signals:
+  - {name: m1, lookback_months: 1}
+  - {name: m3, lookback_months: 3}
+  - {name: m6, lookback_months: 6}
+  - {name: m9, lookback_months: 9}
+  - {name: m12, lookback_months: 12}
+portfolio:
+  construction: sixths
+  gross_exposure: 1.0
+  net_exposure: 0.0
+transaction_cost_bps_round_trip: [0, 2, 5, 10]
+carry_proxy:
+  source: BIS central bank policy rates
+  monthly_approximation: annual_rate_difference_percent_divided_by_1200
+  timing: rate_at_start_of_holding_month
+classification: DIAGNOSTIC_ONLY
+acceptance:
+  require_positive_mean_ic: true
+  require_positive_winner_loser_for_majority_of_lookbacks: true
+  require_directional_agreement_3_6_9_12: true
+  require_positive_net_at_5bp_for_at_least_three_lookbacks: true
+  require_decade_robustness: true
+notes:
+  - This is not a substitute for one-month forward data and cannot validate true excess-return momentum.
+  - No production strategy may be selected from this proxy experiment alone.
