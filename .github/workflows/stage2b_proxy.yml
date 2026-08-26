@@ -1,0 +1,37 @@
+name: stage2b-proxy-research
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/stage2b_proxy.yaml'
+      - 'scripts/fetch_bis_policy_rates.py'
+      - 'scripts/run_stage2b_proxy.py'
+      - '.github/workflows/stage2b_proxy.yml'
+  workflow_dispatch:
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install
+        run: pip install -e '.[dev]'
+      - name: Test
+        run: pytest -q
+      - name: Fetch BIS FX data
+        run: python scripts/fetch_bis_stage2a.py
+      - name: Fetch BIS policy rates
+        run: python scripts/fetch_bis_policy_rates.py
+      - name: Run Stage 2B proxy
+        run: python scripts/run_stage2b_proxy.py
+      - name: Upload Stage 2B proxy results
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage2b-proxy-results
+          path: results/stage2b_proxy/
+          retention-days: 30
