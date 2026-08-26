@@ -23,8 +23,20 @@ SERIES = {
 
 
 def _norm_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize BIS flat-CSV headers to their SDMX concept codes.
+
+    BIS currently emits headers such as ``FREQ:FREQUENCY`` and
+    ``OBS_VALUE:OBSERVATION VALUE``. Older exports may contain the bare code.
+    Retaining the text before the first colon supports both forms.
+    """
     df = df.copy()
-    df.columns = [str(c).strip().upper() for c in df.columns]
+    normalized = []
+    for col in df.columns:
+        name = str(col).strip().upper()
+        if ":" in name:
+            name = name.split(":", 1)[0].strip()
+        normalized.append(name)
+    df.columns = normalized
     aliases = {
         "TIME": "TIME_PERIOD",
         "PERIOD": "TIME_PERIOD",
