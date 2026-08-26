@@ -1,0 +1,37 @@
+name: stage2d-futures-free
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/stage2d_futures_free.yaml'
+      - 'scripts/fetch_stage2d_futures.py'
+      - 'scripts/run_stage2d_futures.py'
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/stage2d_futures_free.yml'
+  workflow_dispatch:
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install
+        run: pip install -e '.[dev]'
+      - name: Test
+        run: pytest -q
+      - name: Fetch free CME futures history
+        run: python scripts/fetch_stage2d_futures.py
+      - name: Run preregistered Stage 2D
+        run: python scripts/run_stage2d_futures.py
+      - name: Upload Stage 2D results
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage2d-futures-free-results
+          path: results/stage2d_futures_free/
+          retention-days: 30
