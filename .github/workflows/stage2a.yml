@@ -35,3 +35,5 @@ jobs:
           name: stage2a-results
           path: results/stage2a/
           retention-days: 30
+
+# Stage 2A is preregistered in config/stage2a.yaml.
