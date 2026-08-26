@@ -1,0 +1,52 @@
+research_id: fx-csmom-stage2d-futures-free-v0
+status: preregistered_diagnostic
+purpose: >-
+  Test cross-sectional momentum directly on tradable CME FX futures using a
+  free continuous-price source. This is not a replication of one-month OTC
+  forward excess returns and is not production-valid because vendor roll
+  methodology is not controlled.
+
+primary_start: '2004-01-02'
+frequency: monthly
+source: yahoo_finance_continuous_cme_futures
+
+contracts:
+  EUR: '6E=F'
+  JPY: '6J=F'
+  GBP: '6B=F'
+  AUD: '6A=F'
+  CAD: '6C=F'
+  CHF: '6S=F'
+  NZD: '6N=F'
+  MXN: '6M=F'
+  ZAR: '6Z=F'
+
+signals:
+  - {name: m1, lookback_months: 1}
+  - {name: m3, lookback_months: 3}
+  - {name: m6, lookback_months: 6}
+  - {name: m9, lookback_months: 9}
+  - {name: m12, lookback_months: 12}
+
+portfolio:
+  construction: top_bottom_third
+  gross_exposure: 1.0
+  net_exposure: 0.0
+  holding_months: 1
+  min_contracts_per_month: 6
+
+transaction_cost_bps_round_trip: [0, 2, 5, 10]
+
+acceptance:
+  - positive_mean_ic_majority
+  - positive_winner_loser_spread_majority
+  - positive_5bp_cagr_at_least_3_of_5
+  - same_direction_3m_6m_9m_12m
+  - positive_5bp_cagr_in_2000s_2010s_2020s_for_at_least_one_lookback
+
+forbidden_changes_after_results:
+  - optimize_lookback_grid
+  - optimize_contract_subset
+  - add_stop_or_regime_filter
+  - add_volatility_targeting
+  - select_best_single_lookback_as_production
