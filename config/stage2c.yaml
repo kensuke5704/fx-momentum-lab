@@ -1,0 +1,56 @@
+strategy_id: fx-csmom-broad-true-forward-v0
+status: preregistered_blocked_on_data
+base_currency: USD
+primary_start: '1999-01-01'
+min_currencies_per_month: 12
+currencies:
+  - EUR
+  - JPY
+  - GBP
+  - AUD
+  - NZD
+  - CAD
+  - CHF
+  - NOK
+  - SEK
+  - DKK
+  - CZK
+  - HUF
+  - PLN
+  - ISK
+  - BRL
+  - MXN
+  - ZAR
+  - KRW
+  - SGD
+  - THB
+  - IDR
+  - INR
+  - ILS
+  - MYR
+  - PHP
+signals:
+  - {name: m1, lookback_months: 1}
+  - {name: m3, lookback_months: 3}
+  - {name: m6, lookback_months: 6}
+  - {name: m9, lookback_months: 9}
+  - {name: m12, lookback_months: 12}
+portfolio:
+  buckets: 6
+  long_bucket: 6
+  short_bucket: 1
+  gross_exposure: 1.0
+  rebalance: monthly
+  holding_months: 1
+transaction_cost_bps_round_trip: [0, 2, 5, 10]
+risk_overlay:
+  stop: false
+  volatility_target: false
+  leverage: false
+  macro_filter: false
+acceptance:
+  positive_mean_ic_family: true
+  positive_winner_loser_majority: true
+  directional_agreement_required: [m3, m6, m9, m12]
+  min_positive_lookbacks_at_5bp: 3
+  decade_robustness: required
