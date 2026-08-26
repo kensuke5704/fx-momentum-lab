@@ -8,6 +8,8 @@ import pandas as pd
 import requests
 import yaml
 
+# Stage 2D uses free vendor continuous futures strictly as a diagnostic source.
+
 
 def fetch_symbol(symbol: str, start: str) -> pd.Series:
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{quote(symbol, safe='')}"
