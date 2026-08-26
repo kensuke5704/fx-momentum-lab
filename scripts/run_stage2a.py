@@ -14,6 +14,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from fx_momentum.metrics import annualized_stats
 from fx_momentum.portfolio import apply_transaction_costs, portfolio_turnover
 
+# Stage 2A conditions are frozen in config/stage2a.yaml.
+
 
 def load_prices(path: str | Path, currencies: list[str]) -> pd.DataFrame:
     df = pd.read_csv(path, parse_dates=["date"]).set_index("date").sort_index()
